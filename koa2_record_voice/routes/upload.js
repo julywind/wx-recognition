@@ -34,6 +34,7 @@ router.post('/', upload.single('file'), async function (ctx, next) {
     if (res.result){
         console.log('文件转换wav成功');
         var filePath = path.resolve('./voice-file/' + ctx.req.file.filename + '.wav');
+        console.log(filePath);
         var base64Data = await speech.base64_encode(filePath);
         var fileInfo = await speech.fileStat(filePath);
         var recogniz = await speech.recognize(base64Data.msg, fileInfo.msg.size);

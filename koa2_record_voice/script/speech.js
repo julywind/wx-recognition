@@ -48,7 +48,7 @@ speech.fileStat = function(file) {
 speech.getAccessToken = function(){
     return new Promise(function (resolve, reject) {
         request({
-            url: 'https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id=（你自己的API key）&client_secret=（你自己的Secret Key）',
+            url: 'https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id=cLoVO8gus3ndSMrpfGmMMIFFjPG8BrwA&client_secret=uwk4Ocqz6wEmu4NiDctbhQFjIuXqGiTg',
             method: 'get',
             headers: {
                 'content-type': 'application/json'
@@ -68,47 +68,67 @@ speech.getAccessToken = function(){
         });
     });
 }
+speech.ensureToken = function(){
+    "use strict";
+    return Promise.resolve().then(()=>{
+        if(!speech.token){
+            return speech.getAccessToken().then(token=>{
+                if(!!token.result){
+                    speech.token = JSON.parse(token.msg);
+                }
+
+                return speech.token;
+            });
+        }
+        return speech.token;
+    })
+}
 
 speech.recognize = function(base64String, size){
-    return new Promise(function (resolve, reject) {
-        request({
-            url: 'http://vop.baidu.com/server_api',
-            method: 'post',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                "format":"wav",
-                "rate":16000,
-                "channel":1,
-                "token":'(你的token)',
-                "cuid":"9e:eb:e8:d4:67:00",
-                "len":size,
-                "speech":base64String
-            })
-            //body: JSON.stringify({
-            //    "format":"wav",
-            //    "rate":16000,
-            //    "channel":1,
-            //    "token":'(你的token)',
-            //    "cuid":'9eebe8d46700',
-            //    "url":'http://ihealth-wx.s1.natapp.cc/download?name=123.wav',
-            //    "callback":'http://ihealth-wx.s1.natapp.cc/callback'
-            //})
-        }, function (error, response, data) {
-            if (error){
-                resolve({
-                    result : false,
-                    msg : '出现错误: ' + JSON.stringify(error)
-                });
-            }else {
-                resolve({
-                    result : true,
-                    msg : data
-                });
-            }
+    return speech.ensureToken().then(token=>{
+        "use strict";
+        console.log("token",token.access_token);
+        return new Promise(function (resolve, reject) {
+            request({
+                url: 'http://vop.baidu.com/server_api',
+                method: 'post',
+                headers: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "format":"wav",
+                    "rate":16000,
+                    "channel":1,
+                    "token":token.access_token,
+                    "cuid":"9e:eb:e8:d4:67:00",
+                    "len":size,
+                    "speech":base64String
+                })
+                //body: JSON.stringify({
+                //    "format":"wav",
+                //    "rate":16000,
+                //    "channel":1,
+                //    "token":'(你的token)',
+                //    "cuid":'9eebe8d46700',
+                //    "url":'http://ihealth-wx.s1.natapp.cc/download?name=123.wav',
+                //    "callback":'http://ihealth-wx.s1.natapp.cc/callback'
+                //})
+            }, function (error, response, data) {
+                if (error){
+                    resolve({
+                        result : false,
+                        msg : '出现错误: ' + JSON.stringify(error)
+                    });
+                }else {
+                    resolve({
+                        result : true,
+                        msg : data
+                    });
+                }
+            });
         });
-    });
+    })
+
 }
 
 var ih_exec = async function(){

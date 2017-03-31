@@ -22,11 +22,9 @@ router.post('/', upload.single('file'), async function (ctx, next) {
     var res = await rename(path.resolve('./image-file/' + ctx.req.file.filename), newPath);
     var body;
     if (res.result){
-        console.log('成功');
-
         var fileInfo = await image.fileStat(newPath);
         console.log(fileInfo);
-        console.log(50000/fileInfo.msg.size);
+        // console.log(50000/fileInfo.msg.size);
 
         if (fileInfo.msg.size > 80000){
 
